@@ -62,3 +62,14 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 - **SystemMetrics Model:** Tracks system-wide performance indicators
 
 ---
+
+## 🔄 Data Flow
+
+1. **Trade Request:** User submits trade parameters through web interface.
+2. **Quote Analysis:** System requests quotes from both Jupiter DEX and OTC pools.
+3. **Route Decision:** Algorithm compares slippage, cost, and execution parameters.
+4. **Trade Execution:** Selected route executes the trade with appropriate parameters.
+5. **Logging:** Trade results and metrics are stored in database.
+6. **Analytics:** Real-time dashboard updates with performance data.
+
+---
