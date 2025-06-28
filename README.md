@@ -121,4 +121,11 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 
 ---
 
+## 🌐 API Endpoints
+
+- **`/api/prices`** → Enhanced endpoint with multi-source pricing and transparent data source reporting.
+- **OTC Engine** now uses **real-time pricing** instead of static fallback prices for improved accuracy.
+
+---
+
 ## 📜 LICENSE - MIT LICENSE 
