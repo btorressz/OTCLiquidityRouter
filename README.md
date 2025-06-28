@@ -134,6 +134,14 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 - **Rate Limit Handling:** Graceful fallback to secondary or tertiary sources if APIs hit rate limits.
 - **Cache Management:** 5-minute cache duration with source tracking for optimal performance.
 
+  > **Note:**  
+> This project includes an `otc_routing.db` SQLite database in both the **main project directory** and the **`instance/` folder**.  
+> The file in the root directory was used initially during early development and quick testing.  
+> For better separation of environment-specific data and local configuration, the `instance/` folder version is now preferred for local development and deployment.
+>
+> Using `instance/otc_routing.db` helps keep the database separate from the main application code and is a common **Flask best practice**.
+
+
   ---
 
 ## 📜 LICENSE - MIT LICENSE 
