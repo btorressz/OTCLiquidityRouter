@@ -111,3 +111,6 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 - Uses **Jupiter API** as the primary source, with **CoinGecko fallback** for reliability.
 
 
+---
+
+## 📜 LICENSE - MIT LICENSE 
