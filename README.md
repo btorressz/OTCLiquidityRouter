@@ -139,7 +139,8 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 > The file in the root directory was used initially during early development and quick testing.  
 > For better separation of environment-specific data and local configuration, the `instance/` folder version is now preferred for local development and deployment.
 >
-> Using `instance/otc_routing.db` helps keep the database separate from the main application code and is a common **Flask best practice**.
+> These database files are **primarily for my own local use at this stage** and can be reconfigured as needed for production.  
+> Using `instance/otc_routing.db` helps keep the database separate from the main application code and follows common **Flask best practices**.
 
 
   ---
