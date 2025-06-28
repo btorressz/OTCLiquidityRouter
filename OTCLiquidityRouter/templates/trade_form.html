@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Execute Trade - OTC Routing Engine{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h2 mb-0">
+            <i class="bi bi-arrow-left-right me-2"></i>
+            Execute Trade
+        </h1>
+        <p class="text-muted">Route large trades through Jupiter DEX or OTC pools based on slippage analysis</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Trade Form -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-calculator me-2"></i>
+                    Trade Parameters
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="tradeForm">
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="amount" name="amount" 
+                                   step="0.01" min="0.1" max="10000" required
+                                   placeholder="Enter amount to trade">
+                            <span class="input-group-text">SOL</span>
+                        </div>
+                        <div class="form-text">
+                            Minimum: 0.1 SOL | Large trades (500+ SOL) may be routed to OTC
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="input_token" class="form-label">From Token</label>
+                            <select class="form-select" id="input_token" name="input_token" required>
+                                <option value="SOL" selected>SOL</option>
+                                <option value="USDC">USDC</option>
+                                <option value="USDT">USDT</option>
+                                <option value="RAY">RAY</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="output_token" class="form-label">To Token</label>
+                            <select class="form-select" id="output_token" name="output_token" required>
+                                <option value="USDC" selected>USDC</option>
+                                <option value="USDT">USDT</option>
+                                <option value="SOL">SOL</option>
+                                <option value="RAY">RAY</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Prices Display -->
+                    <div class="mb-3">
+                        <div class="row g-2 text-center" id="currentPrices">
+                            <div class="col-6">
+                                <div class="small text-muted">SOL Price</div>
+                                <div class="fw-bold" id="solPrice">Loading...</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small text-muted">USDC Price</div>
+                                <div class="fw-bold" id="usdcPrice">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button type="button" class="btn btn-outline-primary w-100" id="getQuoteBtn">
+                            <i class="bi bi-search me-1"></i>
+                            Get Live Quote
+                        </button>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg" id="executeBtn" disabled>
+                            <i class="bi bi-play-circle me-1"></i>
+                            Execute Trade
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quote Display -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Live Quote Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="quoteDisplay">
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-currency-exchange display-4"></i>
+                        <h6 class="mt-2">No quote available</h6>
+                        <p>Enter trade details and click "Get Live Quote" to see routing analysis</p>
+                    </div>
+                </div>
+                
+                <!-- Loading state -->
+                <div id="quoteLoading" class="d-none">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Fetching live quotes...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Routing Logic Explanation -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Routing Logic
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="d-flex align-items-start">
+                            <div class="badge bg-primary me-2 mt-1">DEX</div>
+                            <div>
+                                <small class="fw-semibold">Jupiter DEX Routing</small>
+                                <div class="text-muted small">
+                                    Used for trades with low slippage (&lt;1%) or smaller amounts (&lt;500 SOL)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="d-flex align-items-start">
+                            <div class="badge bg-success me-2 mt-1">OTC</div>
+                            <div>
+                                <small class="fw-semibold">OTC Pool Routing</small>
+                                <div class="text-muted small">
+                                    Used for large trades (500+ SOL) with high Jupiter slippage (>1%)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <hr class="my-2">
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check me-1"></i>
+                                System automatically selects the most cost-effective route
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const getQuoteBtn = document.getElementById('getQuoteBtn');
+    const executeBtn = document.getElementById('executeBtn');
+    const quoteDisplay = document.getElementById('quoteDisplay');
+    const quoteLoading = document.getElementById('quoteLoading');
+    const tradeForm = document.getElementById('tradeForm');
+    
+    let currentQuote = null;
+    
+    // Load current prices
+    async function loadCurrentPrices() {
+        try {
+            const response = await fetch('/api/prices');
+            if (response.ok) {
+                const priceData = await response.json();
+                displayCurrentPrices(priceData.prices);
+            }
+        } catch (error) {
+            console.error('Failed to load current prices:', error);
+        }
+    }
+    
+    function displayCurrentPrices(prices) {
+        const solPriceEl = document.getElementById('solPrice');
+        const usdcPriceEl = document.getElementById('usdcPrice');
+        
+        if (prices && prices.SOL) {
+            solPriceEl.textContent = `$${prices.SOL.price.toFixed(2)}`;
+            const changeClass = prices.SOL.change_24h >= 0 ? 'text-success' : 'text-danger';
+            solPriceEl.className = `fw-bold ${changeClass}`;
+        }
+        
+        if (prices && prices.USDC) {
+            usdcPriceEl.textContent = `$${prices.USDC.price.toFixed(4)}`;
+            const changeClass = prices.USDC.change_24h >= 0 ? 'text-success' : 'text-danger';
+            usdcPriceEl.className = `fw-bold ${changeClass}`;
+        }
+    }
+    
+    // Load prices on page load and refresh every 30 seconds
+    loadCurrentPrices();
+    setInterval(loadCurrentPrices, 30000);
+    
+    getQuoteBtn.addEventListener('click', async function() {
+        const amount = document.getElementById('amount').value;
+        const inputToken = document.getElementById('input_token').value;
+        const outputToken = document.getElementById('output_token').value;
+        
+        if (!amount || amount < 0.1) {
+            alert('Please enter a valid amount (minimum 0.1)');
+            return;
+        }
+        
+        if (inputToken === outputToken) {
+            alert('Input and output tokens must be different');
+            return;
+        }
+        
+        // Show loading
+        quoteDisplay.classList.add('d-none');
+        quoteLoading.classList.remove('d-none');
+        getQuoteBtn.disabled = true;
+        
+        try {
+            const response = await fetch(`/api/quote?input_token=${inputToken}&output_token=${outputToken}&amount=${amount}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                currentQuote = data;
+                displayQuote(data);
+                executeBtn.disabled = false;
+            } else {
+                displayError(data.error || 'Failed to get quote');
+                executeBtn.disabled = true;
+            }
+        } catch (error) {
+            console.error('Quote error:', error);
+            displayError('Network error. Please try again.');
+            executeBtn.disabled = true;
+        } finally {
+            quoteLoading.classList.add('d-none');
+            quoteDisplay.classList.remove('d-none');
+            getQuoteBtn.disabled = false;
+        }
+    });
+    
+    function displayQuote(quote) {
+        const jupiterQuote = quote.jupiter_quote;
+        const otcQuote = quote.otc_quote;
+        const recommendedRoute = quote.recommended_route;
+        const costSavings = quote.cost_savings;
+        
+        quoteDisplay.innerHTML = `
+            <div class="row g-3">
+                <!-- Recommended Route -->
+                <div class="col-12">
+                    <div class="alert alert-${recommendedRoute === 'OTC' ? 'success' : 'primary'} mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-${recommendedRoute === 'OTC' ? 'lightning' : 'arrow-through-heart'} me-2"></i>
+                            <div>
+                                <strong>Recommended: ${recommendedRoute} Route</strong>
+                                ${costSavings > 0 ? `<div class="small">Estimated savings: $${costSavings.toFixed(2)}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Jupiter DEX Quote -->
+                <div class="col-12">
+                    <div class="card ${recommendedRoute === 'DEX' ? 'border-primary' : ''}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0">
+                                    <span class="badge bg-primary me-2">DEX</span>
+                                    Jupiter Route
+                                </h6>
+                                ${recommendedRoute === 'DEX' ? '<i class="bi bi-check-circle-fill text-primary"></i>' : ''}
+                            </div>
+                            <div class="row g-2 small">
+                                <div class="col-6">
+                                    <div class="text-muted">Output Amount</div>
+                                    <div class="fw-semibold">${jupiterQuote.output_amount.toFixed(4)} USDC</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted">Slippage</div>
+                                    <div class="fw-semibold ${jupiterQuote.slippage > 1 ? 'text-warning' : 'text-success'}">
+                                        ${jupiterQuote.slippage.toFixed(3)}%
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted">Route Hops</div>
+                                    <div class="fw-semibold">${jupiterQuote.route_plan}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- OTC Quote -->
+                <div class="col-12">
+                    <div class="card ${recommendedRoute === 'OTC' ? 'border-success' : ''}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0">
+                                    <span class="badge bg-success me-2">OTC</span>
+                                    OTC Pool
+                                </h6>
+                                ${recommendedRoute === 'OTC' ? '<i class="bi bi-check-circle-fill text-success"></i>' : ''}
+                            </div>
+                            ${otcQuote.available ? `
+                                <div class="row g-2 small">
+                                    <div class="col-6">
+                                        <div class="text-muted">Output Amount</div>
+                                        <div class="fw-semibold">${otcQuote.output_amount.toFixed(4)} ${otcQuote.output_token}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-muted">Fixed Price</div>
+                                        <div class="fw-semibold">$${otcQuote.price.toFixed(4)}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-muted">Spread</div>
+                                        <div class="fw-semibold text-info">${otcQuote.spread}%</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-muted">Execution</div>
+                                        <div class="fw-semibold">${otcQuote.execution_estimate}</div>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="text-muted small">
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    ${otcQuote.error}
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function displayError(error) {
+        quoteDisplay.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Quote Error:</strong> ${error}
+            </div>
+        `;
+    }
+    
+    // Form validation
+    tradeForm.addEventListener('submit', function(e) {
+        if (!currentQuote) {
+            e.preventDefault();
+            alert('Please get a quote before executing the trade');
+        }
+    });
+});
+</script>
+{% endblock %}

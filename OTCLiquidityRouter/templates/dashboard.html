@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - OTC Routing Engine{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h2 mb-0">
+            <i class="bi bi-speedometer2 me-2"></i>
+            Trading Dashboard
+        </h1>
+        <p class="text-muted">Real-time trade routing and system performance monitoring</p>
+    </div>
+</div>
+
+<!-- Real-time Price Ticker -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Real-time Market Prices
+                    <small class="text-muted ms-2" id="priceTimestamp">Loading...</small>
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3" id="priceDisplay">
+                    <div class="col text-center">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading prices...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary bg-opacity-10 border-primary">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-primary mb-0">Total Trades</h6>
+                        <h3 class="mb-0">{{ trade_stats.get('total_trades', 0) }}</h3>
+                    </div>
+                    <div class="text-primary opacity-75">
+                        <i class="bi bi-bar-chart fs-1"></i>
+                    </div>
+                </div>
+                <small class="text-muted">
+                    Today: {{ trade_stats.get('today_trades', 0) }}
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success bg-opacity-10 border-success">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-success mb-0">Total Volume</h6>
+                        <h3 class="mb-0">{{ "%.1f"|format(trade_stats.get('total_volume', 0)) }} SOL</h3>
+                    </div>
+                    <div class="text-success opacity-75">
+                        <i class="bi bi-graph-up fs-1"></i>
+                    </div>
+                </div>
+                <small class="text-muted">
+                    Today: {{ "%.1f"|format(trade_stats.get('today_volume', 0)) }} SOL
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info bg-opacity-10 border-info">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-info mb-0">Cost Savings</h6>
+                        <h3 class="mb-0">${{ "%.2f"|format(trade_stats.get('total_cost_savings', 0)) }}</h3>
+                    </div>
+                    <div class="text-info opacity-75">
+                        <i class="bi bi-piggy-bank fs-1"></i>
+                    </div>
+                </div>
+                <small class="text-muted">
+                    Today: ${{ "%.2f"|format(trade_stats.get('today_savings', 0)) }}
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning bg-opacity-10 border-warning">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title text-warning mb-0">OTC Efficiency</h6>
+                        <h3 class="mb-0">{{ "%.1f"|format(trade_stats.get('otc_efficiency', 0)) }}%</h3>
+                    </div>
+                    <div class="text-warning opacity-75">
+                        <i class="bi bi-lightning fs-1"></i>
+                    </div>
+                </div>
+                <small class="text-muted">
+                    OTC: {{ trade_stats.get('otc_trades', 0) }} | DEX: {{ trade_stats.get('dex_trades', 0) }}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Route Distribution and Performance -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-pie-chart me-2"></i>
+                    Route Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="routeChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-activity me-2"></i>
+                    System Performance
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 text-primary">{{ "%.3f"|format(trade_stats.get('avg_dex_slippage', 0)) }}%</div>
+                            <small class="text-muted">Avg DEX Slippage</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 text-info">{{ "%.3f"|format(trade_stats.get('avg_jupiter_slippage', 0)) }}%</div>
+                            <small class="text-muted">Avg Jupiter Slippage</small>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                 style="width: {{ trade_stats.get('otc_efficiency', 0) }}%"></div>
+                        </div>
+                        <small class="text-muted">OTC Routing Efficiency</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Trades -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-clock-history me-2"></i>
+            Recent Trades
+        </h5>
+        <a href="{{ url_for('trade_form') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>
+            New Trade
+        </a>
+    </div>
+    <div class="card-body">
+        {% if recent_trades %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Route</th>
+                            <th>Pair</th>
+                            <th>Amount</th>
+                            <th>Price</th>
+                            <th>Slippage</th>
+                            <th>Savings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trade in recent_trades %}
+                        <tr>
+                            <td>
+                                <small class="text-muted">
+                                    {{ trade.created_at[:19] if trade.created_at else 'N/A' }}
+                                </small>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if trade.route == 'OTC' %}success{% else %}primary{% endif %}">
+                                    {{ trade.route }}
+                                </span>
+                            </td>
+                            <td>{{ trade.input_token }}/{{ trade.output_token }}</td>
+                            <td>{{ "%.2f"|format(trade.input_amount) }} {{ trade.input_token }}</td>
+                            <td>${{ "%.4f"|format(trade.price) }}</td>
+                            <td>
+                                <span class="{% if trade.slippage > 1.0 %}text-warning{% else %}text-success{% endif %}">
+                                    {{ "%.3f"|format(trade.slippage) }}%
+                                </span>
+                            </td>
+                            <td>
+                                {% if trade.cost_savings > 0 %}
+                                    <span class="text-success">+${{ "%.2f"|format(trade.cost_savings) }}</span>
+                                {% else %}
+                                    <span class="text-muted">$0.00</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-inbox display-4 text-muted"></i>
+                <h5 class="text-muted mt-2">No trades yet</h5>
+                <p class="text-muted">Execute your first trade to see data here</p>
+                <a href="{{ url_for('trade_form') }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-right-circle me-1"></i>
+                    Start Trading
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Route Distribution Chart
+    const routeCtx = document.getElementById('routeChart').getContext('2d');
+    new Chart(routeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['OTC Routes', 'DEX Routes'],
+            datasets: [{
+                data: [{{ trade_stats.get('otc_trades', 0) }}, {{ trade_stats.get('dex_trades', 0) }}],
+                backgroundColor: [
+                    'rgba(25, 135, 84, 0.8)',   // Success green for OTC
+                    'rgba(13, 110, 253, 0.8)'   // Primary blue for DEX
+                ],
+                borderColor: [
+                    'rgba(25, 135, 84, 1)',
+                    'rgba(13, 110, 253, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                }
+            }
+        }
+    });
+    
+    // Real-time price functionality
+    async function loadPrices() {
+        try {
+            const response = await fetch('/api/prices');
+            if (response.ok) {
+                const priceData = await response.json();
+                displayPrices(priceData);
+            } else {
+                console.error('Failed to fetch prices');
+                showPriceError();
+            }
+        } catch (error) {
+            console.error('Price fetch error:', error);
+            showPriceError();
+        }
+    }
+    
+    function displayPrices(priceData) {
+        const priceDisplay = document.getElementById('priceDisplay');
+        const priceTimestamp = document.getElementById('priceTimestamp');
+        
+        if (!priceData.prices || Object.keys(priceData.prices).length === 0) {
+            showPriceError();
+            return;
+        }
+        
+        let html = '';
+        for (const [symbol, data] of Object.entries(priceData.prices)) {
+            const changeClass = data.change_24h >= 0 ? 'text-success' : 'text-danger';
+            const changeIcon = data.change_24h >= 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+            
+            html += `
+                <div class="col-md-2 col-sm-4 text-center">
+                    <div class="p-2 border rounded">
+                        <div class="fw-bold">${symbol}</div>
+                        <div class="h6 mb-1">$${data.price.toFixed(symbol === 'SOL' ? 2 : 4)}</div>
+                        <div class="small ${changeClass}">
+                            <i class="bi ${changeIcon}"></i>
+                            ${Math.abs(data.change_24h).toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        priceDisplay.innerHTML = html;
+        
+        // Show data source and timestamp
+        let sourceText = '';
+        if (priceData.source) {
+            if (priceData.source === 'coingecko_live') {
+                sourceText = '🟢 Live CoinGecko';
+            } else if (priceData.source === 'kraken_partial') {
+                sourceText = '🟡 Live Kraken';
+            } else if (priceData.source === 'binance_partial') {
+                sourceText = '🟡 Live Binance';
+            } else if (priceData.source.includes('fallback') || priceData.source === 'all_apis_failed') {
+                sourceText = '🔴 Offline Data';
+            } else {
+                sourceText = '🟡 Cached';
+            }
+        }
+        
+        if (priceData.last_updated) {
+            const timestamp = new Date(priceData.last_updated * 1000);
+            priceTimestamp.textContent = `${sourceText} - Updated: ${timestamp.toLocaleTimeString()}`;
+        } else {
+            priceTimestamp.textContent = `${sourceText} - Updated: ${new Date().toLocaleTimeString()}`;
+        }
+    }
+    
+    function showPriceError() {
+        const priceDisplay = document.getElementById('priceDisplay');
+        const priceTimestamp = document.getElementById('priceTimestamp');
+        
+        priceDisplay.innerHTML = `
+            <div class="col text-center">
+                <div class="text-muted">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Unable to load price data
+                </div>
+            </div>
+        `;
+        priceTimestamp.textContent = 'Price feed unavailable';
+    }
+    
+    // Load prices immediately and then every 30 seconds
+    loadPrices();
+    setInterval(loadPrices, 30000);
+    
+    // Auto-refresh dashboard every 60 seconds (less frequent since prices update separately)
+    setInterval(function() {
+        if (document.visibilityState === 'visible') {
+            // Only reload if no user interaction with forms
+            const activeElement = document.activeElement;
+            if (!activeElement.matches('input, textarea, select')) {
+                location.reload();
+            }
+        }
+    }, 60000);
+});
+</script>
+{% endblock %}
