@@ -137,3 +137,12 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
   ---
 
 ## 📜 LICENSE - MIT LICENSE 
+  - This project is under the **MIT LICENSE**
+
+    ---
+    
+
+## 📸 Screenshots
+
+![OTCLiquidityRouter Screenshot](https://github.com/btorressz/OTCLiquidityRouter/blob/main/OTCLiquidityRouter1.jpg?raw=true)
+
