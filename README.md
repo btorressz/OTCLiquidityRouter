@@ -146,3 +146,6 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 
 ![OTCLiquidityRouter Screenshot](https://github.com/btorressz/OTCLiquidityRouter/blob/main/OTCLiquidityRouter1.jpg?raw=true)
 
+![OTCLiquidityRouter Screenshot](https://github.com/btorressz/OTCLiquidityRouter/blob/main/OTCLiquidityRouter2.jpg?raw=true)
+
+
