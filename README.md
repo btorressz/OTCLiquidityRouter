@@ -128,4 +128,12 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 
 ---
 
+## 🔍 Data Source Transparency
+
+- **Source Indicators:** Dashboard clearly shows which pricing data source is active (*CoinGecko Live*, *Kraken Live*, etc.).
+- **Rate Limit Handling:** Graceful fallback to secondary or tertiary sources if APIs hit rate limits.
+- **Cache Management:** 5-minute cache duration with source tracking for optimal performance.
+
+  ---
+
 ## 📜 LICENSE - MIT LICENSE 
