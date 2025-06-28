@@ -33,3 +33,32 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 
 ---
 
+# 🗂️ Key Components
+
+### 🔗 Jupiter API Integration (`jupiter_api.py`)
+- **Purpose:** Interfaces with Jupiter DEX API for real-time quotes and liquidity analysis
+- **Features:** Token mint address management, quote retrieval with slippage tolerance
+- **Rate Limiting:** Built-in session management and error handling
+
+### 🏦 OTC Engine (`otc_engine.py`)
+- **Purpose:** Simulates OTC pool behavior with realistic pricing and liquidity constraints
+- **Features:**
+  - Multiple pool configurations (e.g., SOL/USDC, SOL/USDT)
+  - Dynamic spread calculation
+  - Liquidity management with trade size limits
+  - Execution delay simulation
+
+### 📝 Trade Logger (`trade_logger.py`)
+- **Purpose:** Comprehensive logging and analytics system
+- **Features:**
+  - Trade execution recording
+  - System metrics tracking
+  - Cost savings analysis
+  - Performance monitoring
+
+### 🗃️ Models (`models.py`)
+- **Trade Model:** Stores execution data, routing decisions, and performance metrics
+- **OTCPool Model:** Manages pool configurations and liquidity parameters
+- **SystemMetrics Model:** Tracks system-wide performance indicators
+
+---
