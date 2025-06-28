@@ -73,3 +73,23 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 6. **Analytics:** Real-time dashboard updates with performance data.
 
 ---
+
+## 📦 External Dependencies
+
+### 🧰 Core Dependencies
+- **Flask 3.1.1:** Web framework
+- **SQLAlchemy 2.0.41:** Database ORM
+- **Requests 2.32.4:** HTTP client for external API calls
+- **Gunicorn 23.0.0:** Production WSGI server
+- **psycopg2-binary 2.9.10:** PostgreSQL adapter
+
+### 🖼️ Frontend Dependencies (CDN)
+- **Bootstrap 5.3.2:** UI framework
+- **Bootstrap Icons 1.11.1:** Icon library
+- **Chart.js:** Data visualization
+
+### 🌐 Jupiter DEX API
+- **Endpoint:** `https://quote-api.jup.ag/v6`
+- **Purpose:** Real-time DEX quotes and routing
+- **Authentication:** None required (public API)
+
