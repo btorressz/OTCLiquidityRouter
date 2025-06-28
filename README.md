@@ -93,3 +93,21 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 - **Purpose:** Real-time DEX quotes and routing
 - **Authentication:** None required (public API)
 
+  ## 💹 Real-time Pricing System
+
+### 🔗 CoinGecko API Integration
+- Added fallback pricing through **CoinGecko API** with 24-hour change tracking.
+
+### 🗄️ Price Caching
+- Implemented **30-second price caching** to optimize API calls and reduce load.
+
+### 📈 Dashboard Price Ticker
+- Real-time price display with **color-coded changes** on the main dashboard.
+
+### 📝 Trade Form Pricing
+- Current **market prices** shown directly on the trade execution form.
+
+### 🌐 Multi-source Pricing
+- Uses **Jupiter API** as the primary source, with **CoinGecko fallback** for reliability.
+
+
