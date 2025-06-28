@@ -93,23 +93,31 @@ It provides real-time trade execution, analytics, and monitoring capabilities th
 - **Purpose:** Real-time DEX quotes and routing
 - **Authentication:** None required (public API)
 
-  ## 💹 Real-time Pricing System
+## 💹 Real-time Pricing System
 
-### 🔗 CoinGecko API Integration
-- Added fallback pricing through **CoinGecko API** with 24-hour change tracking.
+### 🌐 CoinGecko Primary Source
+- Main pricing API providing comprehensive token data with **24-hour price changes** for all supported tokens.
+
+### 🔗 Multi-source Failover
+- Fallback sequence: **CoinGecko (primary)** → **Kraken (secondary)** → **Binance (tertiary)** → Static fallback.
+
+### 🐙 Kraken Integration
+- Added as a **secondary source** for SOL/USD pricing when CoinGecko experiences rate limiting.
+
+### ⚡ Jupiter Role
+- **Jupiter** is used **exclusively** for **DEX trade quotes and execution routing**, not for general pricing data.
 
 ### 🗄️ Price Caching
-- Implemented **30-second price caching** to optimize API calls and reduce load.
+- Implements a **5-minute cache duration** to optimize API calls and reduce rate limiting.
 
-### 📈 Dashboard Price Ticker
-- Real-time price display with **color-coded changes** on the main dashboard.
+### 📈 Dashboard Transparency
+- Real-time price display with **clear data source indicators**:
+  - 🟢 Live CoinGecko
+  - 🟡 Live Kraken
+  - 🔴 Offline
 
-### 📝 Trade Form Pricing
-- Current **market prices** shown directly on the trade execution form.
-
-### 🌐 Multi-source Pricing
-- Uses **Jupiter API** as the primary source, with **CoinGecko fallback** for reliability.
-
+### 🤖 Smart Rate Limit Handling
+- Automatic API source switching when **rate limits or errors** occur.
 
 ---
 
